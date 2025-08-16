@@ -4,13 +4,13 @@ An executable unit test program for typescript node project that make sense to m
 ## Usage
 
 ```bash
-$ npm install --save-dev github:AFwcxx/runner
+$ npm install --save-dev github:AFwcxx/ts-runner
 ```
 
 Declare in a file:
 
 ```javascript
-import { Runner, Baton, Process } from "runner";
+import { Runner, Baton, Process } from "ts-runner";
 ```
 
 And then you can refer to [this test](src/test.ts).
