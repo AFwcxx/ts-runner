@@ -1,4 +1,4 @@
-# runner
+# ts-runner
 An executable unit test program for typescript node project that make sense to me.
 
 ## Usage
