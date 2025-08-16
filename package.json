@@ -1,0 +1,33 @@
+{
+  "name": "runner",
+  "version": "1.0.0",
+  "description": "Typescript node unit test program that make sense to me.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:bundle": "tsc",
+    "build": "npm run build:types && npm run build:bundle",
+    "publish": "npm run build && npm pack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AFwcxx/runner.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AFwcxx/runner/issues"
+  },
+  "homepage": "https://github.com/AFwcxx/runner#readme",
+  "dependencies": {
+    "@types/node": "^24.3.0",
+    "axios": "^1.11.0",
+    "chalk": "^5.5.0",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
