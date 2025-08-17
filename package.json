@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "test": "tsc && node dist/test.js",
     "build:types": "tsc --project tsconfig.build.json",
     "build:bundle": "tsc",
     "build": "npm run build:types && npm run build:bundle",

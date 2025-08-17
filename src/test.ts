@@ -39,7 +39,7 @@ const program: Array<Process> = [
     notifyOnEnd: true,
     executor: function (baton: Baton) {
       console.log(baton.data.someone);
-      console.log(baton.data.fromFirst.myData);
+      console.log(baton.data.fromFirst);
       throw new Error("Something is not working because of something..");
     },
   }

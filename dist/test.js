@@ -36,7 +36,7 @@ const program = [
         notifyOnEnd: true,
         executor: function (baton) {
             console.log(baton.data.someone);
-            console.log(baton.data.fromFirst.myData);
+            console.log(baton.data.fromFirst);
             throw new Error("Something is not working because of something..");
         },
     }

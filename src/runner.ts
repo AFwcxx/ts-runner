@@ -137,11 +137,40 @@ async function capture_console(
   const errors: string[] = [];
 
   console.log = (...args: any[]) => {
-    logs.push(args.map(String).join(" "));
+    const message = args
+      .map(arg => {
+        if (typeof arg === "object") {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
+        }
+        return String(arg);
+      })
+      .join(" ");
+
+    logs.push(message);
   };
 
   console.error = (...args: any[]) => {
-    errors.push(args.map(String).join(" "));
+    const message = args
+      .map(arg => {
+        if (arg instanceof Error) {
+          return arg.stack || arg.toString();
+        }
+        return typeof arg === "object"
+          ? JSON.stringify(arg, null, 2)
+          : String(arg);
+      })
+      .join(" ");
+
+    const fakeError = new Error();
+    const stack = fakeError.stack
+      ? fakeError.stack.split("\n").slice(2).join("\n")
+      : "";
+
+    errors.push(message + (stack ? "\n" + stack : ""));
   };
 
   let hasInternal = false;
@@ -206,7 +235,7 @@ async function measure(v: Process, options: {
     const end = performance.now();
     Logger.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
     Logger.warning("Error: " + v.subject, { bold: true });
-    Logger.danger(err.message, { indent: 2 });
+    Logger.danger(err.stack || err.toString(), { indent: 2 });
     Logger.plain_dark("└" + "─".repeat(69) + "┘");
     boundary();
     counter++;

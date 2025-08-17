@@ -121,10 +121,37 @@ async function capture_console(fn) {
     const logs = [];
     const errors = [];
     console.log = (...args) => {
-        logs.push(args.map(String).join(" "));
+        const message = args
+            .map(arg => {
+            if (typeof arg === "object") {
+                try {
+                    return JSON.stringify(arg, null, 2);
+                }
+                catch {
+                    return String(arg);
+                }
+            }
+            return String(arg);
+        })
+            .join(" ");
+        logs.push(message);
     };
     console.error = (...args) => {
-        errors.push(args.map(String).join(" "));
+        const message = args
+            .map(arg => {
+            if (arg instanceof Error) {
+                return arg.stack || arg.toString();
+            }
+            return typeof arg === "object"
+                ? JSON.stringify(arg, null, 2)
+                : String(arg);
+        })
+            .join(" ");
+        const fakeError = new Error();
+        const stack = fakeError.stack
+            ? fakeError.stack.split("\n").slice(2).join("\n")
+            : "";
+        errors.push(message + (stack ? "\n" + stack : ""));
     };
     let hasInternal = false;
     try {
@@ -181,7 +208,7 @@ async function measure(v, options = {}) {
         const end = node_perf_hooks_1.performance.now();
         logger_1.default.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
         logger_1.default.warning("Error: " + v.subject, { bold: true });
-        logger_1.default.danger(err.message, { indent: 2 });
+        logger_1.default.danger(err.stack || err.toString(), { indent: 2 });
         logger_1.default.plain_dark("└" + "─".repeat(69) + "┘");
         boundary();
         counter++;
