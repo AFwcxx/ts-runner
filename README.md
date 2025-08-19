@@ -13,7 +13,7 @@ Install directly from GitHub:
 npm install --save-dev github:AFwcxx/ts-runner
 
 # Update to newer version
-npm upgrade --save-dev github:AFwcxx/ts-runner
+npm upgrade --save-dev ts-runner
 ```
 
 ---
