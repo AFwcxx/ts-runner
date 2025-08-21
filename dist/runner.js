@@ -189,10 +189,12 @@ async function capture_console(fn) {
         }
     }
     catch (err) {
-        if (typeof err !== "object") {
-            err = new Error(err.toString());
+        if (!(err instanceof Error)) {
+            err = new Error(String(err));
         }
         err.runner = { logs };
+        err.originalStack = err.stack;
+        Error.captureStackTrace(err);
         throw err;
     }
     finally {

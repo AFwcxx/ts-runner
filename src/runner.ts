@@ -218,10 +218,12 @@ async function capture_console(
       await executed;
     }
   } catch (err: any) {
-    if (typeof err !== "object") {
-      err = new Error(err.toString());
+    if (!(err instanceof Error)) {
+        err = new Error(String(err));
     }
     err.runner = { logs };
+    err.originalStack = err.stack; // keep original
+    Error.captureStackTrace(err);  // reset stack to here
     throw err;
   } finally {
     console.log = originalLog;
