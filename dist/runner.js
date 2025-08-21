@@ -192,9 +192,7 @@ async function capture_console(fn) {
         if (!(err instanceof Error)) {
             err = new Error(String(err));
         }
-        err.runner = { logs };
-        err.originalStack = err.stack;
-        Error.captureStackTrace(err);
+        Object.assign(err, { runner: { logs } });
         throw err;
     }
     finally {

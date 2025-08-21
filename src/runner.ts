@@ -221,9 +221,8 @@ async function capture_console(
     if (!(err instanceof Error)) {
         err = new Error(String(err));
     }
-    err.runner = { logs };
-    err.originalStack = err.stack; // keep original
-    Error.captureStackTrace(err);  // reset stack to here
+    // attach extra info without clobbering original stack
+    Object.assign(err, { runner: { logs } });
     throw err;
   } finally {
     console.log = originalLog;
