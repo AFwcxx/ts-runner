@@ -218,6 +218,9 @@ async function capture_console(
       await executed;
     }
   } catch (err: any) {
+    if (typeof err !== "object") {
+      err = new Error(err.toString());
+    }
     err.runner = { logs };
     throw err;
   } finally {
