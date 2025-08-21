@@ -29,6 +29,8 @@ const program: Array<Process> = [
     notifyOnEnd: true,
     executor: async function (baton: Baton) {
       console.log("Let me go first..");
+      console.info("Out of courtesy, you go first..");
+      console.log("Logging something..");
       await new Promise(resolve => setTimeout(resolve, 1000));
       baton.data.someone = "Hello stranger!";
       console.error("Followed by me..");

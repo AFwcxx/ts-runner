@@ -115,17 +115,21 @@ function boundary() {
         console.log(" ".repeat(35) + "┃");
     }
 }
+function ts() {
+    const now = new Date();
+    return now.toISOString();
+}
 async function capture_console(fn) {
     const originalLog = console.log;
+    const originalInfo = console.info;
     const originalError = console.error;
     const logs = [];
-    const errors = [];
     console.log = (...args) => {
         const message = args
             .map(arg => {
             if (typeof arg === "object") {
                 try {
-                    return JSON.stringify(arg, null, 2);
+                    return "Object:\n" + JSON.stringify(arg, null, 2);
                 }
                 catch {
                     return String(arg);
@@ -134,7 +138,29 @@ async function capture_console(fn) {
             return String(arg);
         })
             .join(" ");
-        logs.push(message);
+        logs.push({
+            type: "log",
+            message: `${ts()}: ` + message
+        });
+    };
+    console.info = (...args) => {
+        const message = args
+            .map(arg => {
+            if (typeof arg === "object") {
+                try {
+                    return "Object:\n" + JSON.stringify(arg, null, 2);
+                }
+                catch {
+                    return String(arg);
+                }
+            }
+            return String(arg);
+        })
+            .join(" ");
+        logs.push({
+            type: "info",
+            message: `${ts()}: ` + message
+        });
     };
     console.error = (...args) => {
         const message = args
@@ -151,9 +177,11 @@ async function capture_console(fn) {
         const stack = fakeError.stack
             ? fakeError.stack.split("\n").slice(2).join("\n")
             : "";
-        errors.push(message + (stack ? "\n" + stack : ""));
+        logs.push({
+            type: "error",
+            message: `${ts()}: ` + message + (stack ? "\n" + stack : "")
+        });
     };
-    let hasInternal = false;
     try {
         const executed = fn(baton);
         if (executed instanceof Promise) {
@@ -161,55 +189,55 @@ async function capture_console(fn) {
         }
     }
     catch (err) {
-        if (logs.length || errors.length) {
-            err.hasInternal = true;
-        }
+        err.runner = { logs };
         throw err;
     }
     finally {
         console.log = originalLog;
+        console.info = originalInfo;
         console.error = originalError;
-        if (logs.length || errors.length) {
-            logger_1.default.plain_dark("┌" + "─".repeat(69) + "┐");
-            logger_1.default.info("Internal logs:");
-            logs.forEach(msg => logger_1.default.muted(msg, { indent: 3 }));
-            errors.forEach(msg => logger_1.default.danger(msg, { indent: 3 }));
-            hasInternal = true;
-        }
     }
-    return hasInternal;
+    return { logs };
+}
+function handle_internals(logs) {
+    if (logs.length) {
+        logger_1.default.plain_dark("├" + "╌".repeat(69) + "┤");
+        logger_1.default.info("Internal logs:");
+        logs.forEach((log) => {
+            if (log.type === "log") {
+                logger_1.default.muted(log.message, { indent: 3 });
+            }
+            else if (log.type === "info") {
+                logger_1.default.info(log.message, { indent: 3 });
+            }
+            else if (log.type === "error") {
+                logger_1.default.danger(log.message, { indent: 3 });
+            }
+        });
+    }
+    logger_1.default.plain_dark("└" + "─".repeat(69) + "┘");
 }
 async function measure(v, options = {}) {
     const start = node_perf_hooks_1.performance.now();
     const { slackWebhookUrl } = options;
+    logger_1.default.plain_dark("┌" + "─".repeat(69) + "┐");
     try {
-        const hasInternal = await capture_console(v.executor);
-        if (hasInternal) {
-            logger_1.default.plain_dark("├" + "╌".repeat(69) + "┤");
-        }
-        else {
-            logger_1.default.plain_dark("┌" + "─".repeat(69) + "┐");
-        }
+        const { logs } = await capture_console(v.executor);
         const end = node_perf_hooks_1.performance.now();
         logger_1.default.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
         logger_1.default.success("Success: " + v.subject);
-        logger_1.default.plain_dark("└" + "─".repeat(69) + "┘");
+        handle_internals(logs);
         boundary();
         counter++;
         successCount++;
     }
     catch (err) {
-        if (err.hasInternal) {
-            logger_1.default.plain_dark("├" + "╌".repeat(69) + "┤");
-        }
-        else {
-            logger_1.default.plain_dark("┌" + "─".repeat(69) + "┐");
-        }
+        const { logs } = err.runner;
         const end = node_perf_hooks_1.performance.now();
         logger_1.default.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
         logger_1.default.warning("Error: " + v.subject, { bold: true });
         logger_1.default.danger(err.stack || err.toString(), { indent: 2 });
-        logger_1.default.plain_dark("└" + "─".repeat(69) + "┘");
+        handle_internals(logs);
         boundary();
         counter++;
         errorCount++;
