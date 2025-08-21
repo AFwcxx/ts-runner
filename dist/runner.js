@@ -232,12 +232,14 @@ async function measure(v, options = {}) {
         successCount++;
     }
     catch (err) {
-        const { logs } = err.runner;
         const end = node_perf_hooks_1.performance.now();
         logger_1.default.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
         logger_1.default.warning("Error: " + v.subject, { bold: true });
         logger_1.default.danger(err.stack || err.toString(), { indent: 2 });
-        handle_internals(logs);
+        if (err && err.runner) {
+            const { logs } = err.runner;
+            handle_internals(logs);
+        }
         boundary();
         counter++;
         errorCount++;

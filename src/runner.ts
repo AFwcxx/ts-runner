@@ -267,12 +267,14 @@ async function measure(v: Process, options: {
     counter++;
     successCount++;
   } catch (err: any) {
-    const { logs } = err.runner;
     const end = performance.now();
     Logger.muted(`Execution time: ${(end - start).toFixed(3)} ms`);
     Logger.warning("Error: " + v.subject, { bold: true });
     Logger.danger(err.stack || err.toString(), { indent: 2 });
-    handle_internals(logs);
+    if (err && err.runner) {
+      const { logs } = err.runner;
+      handle_internals(logs);
+    }
     boundary();
     counter++;
     errorCount++;
